@@ -7,6 +7,7 @@ import {
 } from 'expo';
 import fonts from 'app/src/fonts';
 import images from 'app/src/images';
+import MainTabNavigator from 'app/src/navigation/MainTabNavigator';
 
 export default class App extends React.Component {
   static defaultProps = {
@@ -50,21 +51,8 @@ export default class App extends React.Component {
     }
 
     return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Hello World</Text>
-      </View>
+      <MainTabNavigator />
     );
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  text: {
-    fontFamily: 'noto-sans-bold',
-  }
-});

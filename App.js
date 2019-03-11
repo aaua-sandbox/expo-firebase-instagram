@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { createAppContainer } from 'react-navigation';
 import {
   AppLoading,
   Asset,
@@ -7,7 +7,7 @@ import {
 } from 'expo';
 import fonts from 'app/src/fonts';
 import images from 'app/src/images';
-import MainTabNavigator from 'app/src/navigation/MainTabNavigator';
+import AppNavigator from "app/src/navigation/AppNavigator";
 
 export default class App extends React.Component {
   static defaultProps = {
@@ -50,8 +50,14 @@ export default class App extends React.Component {
       );
     }
 
+    const AppContainer = createAppContainer(AppNavigator);
+
     return (
-      <MainTabNavigator />
+      <AppContainer
+        ref={nav => {
+          this.navigator = nav;
+        }}
+      />
     );
   }
 }

@@ -1,4 +1,4 @@
-import { createStackNavigator } from 'react-navigation';
+import { createStackNavigator, NavigationActions } from 'react-navigation';
 
 /* screen */
 import MainTabNavigator from 'app/src/navigation/MainTabNavigator';
@@ -64,5 +64,40 @@ const AppNavigator = createStackNavigator(
     }),
   },
 );
+
+// 同じスクリーンから同じスクリーンに遷移する事を避けるようにする
+const navigateOnce = getStateForAction => (action, state) => {
+  const { type, routeName } = action;
+
+  if (state && type === NavigationActions.NAVIGATE) {
+    // 直前のrouteNameと遷移先のrouteNameが同じであれば遷移を無効化する
+    if (routeName === state.routes[state.routes.length - 1].routeName) {
+      return null;
+    }
+  }
+
+  return getStateForAction(action, state);
+};
+
+// アクティブになっているrouteNameを取得
+export const getActiveRouteName = (navigationState) => {
+  if (!navigationState) {
+    return null;
+  }
+
+  // アクティブな子routeを取得
+  const route = navigationState.routes[navigationState.index];
+
+  // 子routesがあれば再帰的に呼び出す
+  if (route.routes) {
+    return getActiveRouteName(route);
+  }
+
+  return route.routeName;
+};
+
+// navigateOnceを設定する事でルーティング時にStoreのStateを取得するようになる
+AppNavigator.router.getStateForAction = navigateOnce(AppNavigator.router.getStateForAction);
+
 
 export default AppNavigator;

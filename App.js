@@ -1,5 +1,4 @@
 import React from 'react';
-import { createAppContainer } from 'react-navigation';
 import {
   AppLoading,
   Asset,
@@ -7,7 +6,7 @@ import {
 } from 'expo';
 import fonts from 'app/src/fonts';
 import images from 'app/src/images';
-import AppNavigator from "app/src/navigation/AppNavigator";
+import Navigation from "app/src";
 
 export default class App extends React.Component {
   static defaultProps = {
@@ -50,14 +49,8 @@ export default class App extends React.Component {
       );
     }
 
-    const AppContainer = createAppContainer(AppNavigator);
-
     return (
-      <AppContainer
-        ref={nav => {
-          this.navigator = nav;
-        }}
-      />
+      <Navigation />
     );
   }
 }

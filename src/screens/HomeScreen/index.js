@@ -31,13 +31,14 @@ export default class HomeScreen extends React.Component {
           user: {
             uid: 1,
             img: 'https://dummyimage.com/40x40/fff/000.jpg&text=User1',
+            name: 'User1'
           },
         },
       ],
       fetching: false,
       loading: false,
     };
-  }
+  };
 
   onUserPress = (item) => {
     // TODO: UserScreenに遷移する処理
@@ -87,12 +88,12 @@ export default class HomeScreen extends React.Component {
     return (
       <View style={styles.container} testID="Home">
         <FlatList
-          data={props}
+          data={posts}
           keyExtractor={item => item.key}
           renderItem={({ item, index, viewableItemIndices }) => (
             <Item
               {...item}
-              visible={viewableItemIndices.indexOf(index) > 1}
+              visible={viewableItemIndices.indexOf(index) > -1}
               onUserPress={this.onUserPress}
               onMorePress={this.onMorePress}
               onLikePress={this.onLikePress}

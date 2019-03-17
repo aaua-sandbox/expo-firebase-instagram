@@ -15,8 +15,6 @@ export default class Text extends React.Component {
       color: Constants.manifest.extra.textColor,
     };
 
-    return (
-      <RNText {...this.props} style={[textStyle, style]} />
-    );
+    return <RNText {...this.props} style={[textStyle, style]} />;
   }
 }

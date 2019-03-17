@@ -35,7 +35,7 @@ export default class FlatList extends React.Component {
     return (
       <RNFlatList
         {...this.props}
-        renderItem={props = renderItem({ ...props, viewableItemIndices })}
+        renderItem={props => renderItem({ ...props, viewableItemIndices })}
         extraData={Object.assign({}, extraData, viewableItemIndices)}
         viewabilityConfig={this.viewabilityConfig}
         onViewableItemsChanged={this.onViewableItemsChanged}

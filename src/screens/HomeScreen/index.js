@@ -55,6 +55,8 @@ export default class HomeScreen extends React.Component {
   onLinkPress = (url, txt) => {
     const { navigation } = this.props;
 
+    console.log(txt);
+
     switch (txt[0]) {
       case '#':
         navigation.push('Tag', { tag: txt });

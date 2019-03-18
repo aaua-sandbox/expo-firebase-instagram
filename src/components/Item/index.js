@@ -25,6 +25,10 @@ linkify.add('#', {
       linkify.re.hashtag = new RegExp(/^[#]{0,2}?(w*[一-龠_ぁ-ん_ァ-ヴーａ-ｚＡ-Ｚa-zA-Z0-9]+|[a-zA-Z0-9_]+|[a-zA-Z0-9_]w*)/gi);
     }
 
+    if (linkify.re.hashtag.test(tail)) {
+      return tail.match(linkify.re.hashtag)[0].trim().length;
+    }
+
     return 0;
   },
   normalize: (match) => {

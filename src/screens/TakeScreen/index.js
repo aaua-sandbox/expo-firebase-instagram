@@ -130,7 +130,7 @@ export default class TakeScreen extends React.Component {
         }
       }
     }
-  }
+  };
 
   render() {
     const {
@@ -180,7 +180,7 @@ export default class TakeScreen extends React.Component {
 
         <View style={styles.take}>
           {mode === 'photo' && (
-            <TouchableOpacity style={styles.takeButton} onPress={this.onTabPress} />
+            <TouchableOpacity style={styles.takeButton} onPress={this.onTakePress} />
           )}
           {mode === 'movie' && (
             <TouchableOpacity style={[styles.takeButton, isRecording ? styles.takeButtonRecording : null]} onPress={this.onRecordPress} />

@@ -10,6 +10,7 @@ import {
 import { Video } from 'expo';
 
 /* from app */
+import firebase from 'app/src/firebase';
 import IconButton from 'app/src/components/IconButton';
 import styles from './styles';
 import {NavigationActions} from "react-navigation";
@@ -52,9 +53,31 @@ export default class TakePublishScreen extends React.Component {
   };
 
   onPublish = async () => {
-    // TODO: 投稿処理
+    const {
+      mode,
+      photo,
+      movie,
+      text,
+    } = this.state;
     const { navigation } = this.props;
-    navigation.goBack();
+
+    Keyboard.dismiss(); // キーボードを隠す
+
+    navigation.setParams({
+      headerRight: <IconButton name={"ios-refresh"} />,
+    });
+
+    const result = await firebase.createPost(text, mode === 'photo' ? photo : movie, mode);
+
+    navigation.setParams({
+      headerRight: <IconButton name={"ios-send"} onPress={this.onPublish} />,
+    });
+
+    if (result.error) {
+      Alert.alert('TakePublish.alert', result.error);
+    } else {
+      navigation.dispatch({ type: 'TAKEMODAL_CLOSE' });
+    }
   };
 
   render() {

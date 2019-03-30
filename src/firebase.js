@@ -20,8 +20,10 @@ class Firebase {
     // Timestamp型を扱えるようにする
     firebase.firestore().settings({ timestampsInSnapshots: true });
 
-    // Userコレクションへの参照を取得
+    // コレクションへの参照を取得
     this.user = firebase.firestore().collection('user');
+    this.post = firebase.firestore().collection('post');
+    this.tag = firebase.firestore().collection('tag');
   }
 
   // 匿名ログインユーザーを取得
@@ -109,6 +111,114 @@ class Firebase {
       return { error: message };
     }
   };
+
+  // 投稿の作成
+  createPost = async (text = '', file = '', type = 'photo') => {
+    try {
+      // CloudStrageにファイルをアップロードする
+      const remoteUri = await this.uploadFileAsync(file.uri);
+      const tags = text.match(/[#]{0,2}?(w*[一-龠_ぁ-ん_ァ-ヴーａ-ｚＡ-Ｚa-zA-Z0-9]+|[a-zA-Z0-9_]+|[a-zA-Z0-9_]w*)/gi);
+
+      // 投稿をFirestoreに保存
+      await this.post.add({
+        text,
+        timestamp: Date.now(),
+        type,
+        fileWidth: (type === 'photo') ? file.width : null,
+        fileHeight: (type === 'photo') ? file.height : null,
+        fileUri: remoteUri, // ファイルのアップロード先のURLを格納
+        user: this.user.doc(`${this.uid}`), // ユーザー情報への参照
+        tag: tags ? tags.reduce((acc, cur) => {
+            acc[cur.replace(/#/, '')] = Date.now();
+            return acc;
+          }, {}) : null,
+      });
+
+      if (tags) {
+        await Promise.all(tags.map((tag) => {
+          const t = tag.replace(/^#/, '');
+
+          // タグドキュメントを作成または上書きする
+          this.tag.doc(t).set({
+            name: t,
+          });
+        }));
+      }
+
+      return true;
+    } catch ({ message }) {
+      return { error: message };
+    }
+  };
+
+  // 投稿の取得
+  getPost = async (pid = '0') => {
+    try {
+      const post = await this.post.doc(pid).get().then(res => res.data());
+      const user = await post.user.get().then(res => res.data());
+
+      user.uid = post.user.id;
+      delete post.user;
+
+      // 投稿がいいね済みかどうか確認
+      const liked = await this.user.doc(`${this.uid}`).collection('liked').doc(pid).get()
+        .then(res => res.exists);
+
+      return {
+        pid,
+        ...post,
+        liked,
+        user,
+      };
+
+    } catch ({ message }) {
+      return { error: message };
+    }
+  };
+
+  // 投稿の一覧を取得
+  getPosts = async (cursor = null, num = 5) => {
+    // timestampの降順で並び替えて最初のnum個の投稿を取得
+    let ref = this.post.orderBy('timestamp', 'desc').limit(num);
+
+    try {
+      if (cursor) {
+        ref = ref.startAfter(cursor); // クエリの開始点を定義
+      }
+
+      const querySnapshot = await ref.get();
+      const data = [];
+      await Promise.all(querySnapshot.docs.map(async (doc) => {
+        if (doc.exists) {
+          const post = doc.data() || {};
+
+          const user = await post.user.get().then(res => res.data());
+          user.uid = post.user.id;
+          delete post.user;
+
+          const liked = await this.user.doc(`${this.uid}`).collection('liked').doc(doc.id).get()
+            .then(res => res.exists);
+
+          data.push({
+            key: doc.id,
+            pid: doc.id,
+            user,
+            ...post,
+            liked,
+          });
+        }
+      }));
+
+      // querySnapshot.docが存在したら最後のドキュメントを、なければnullを代入する
+      const lastVisible = querySnapshot.docs.length > 0 ?
+        querySnapshot.docs[querySnapshot.docs.length - 1] : null;
+
+      return { data, cursor: lastVisible };
+
+    } catch ({ message }) {
+      return { error: message };
+    }
+  }
 }
 
 const fire = new Firebase(Constants.manifest.extra.firebase);

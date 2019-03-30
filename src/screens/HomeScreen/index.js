@@ -9,6 +9,7 @@ import {
 import { WebBrowser } from 'expo';
 
 /* from app */
+import firebase from 'app/src/firebase';
 import FlatList from 'app/src/components/FlatList';
 import Item from 'app/src/components/Item';
 import Text from 'app/src/components/Text';
@@ -24,28 +25,54 @@ export default class HomeScreen extends React.Component {
     super(props);
 
     this.state = {
-      posts: [
-        {
-          text: '１つ目の投稿です。 #tag1',
-          fileUri: 'https://dummyimage.com/400x400/000/fff.jpg&text=Post1',
-          user: {
-            uid: 1,
-            img: 'https://dummyimage.com/40x40/fff/000.jpg&text=User1',
-            name: 'User1'
-          },
-        },
-      ],
+      posts: [],
       fetching: false,
       loading: false,
     };
   };
 
+  async componentDidMount() {
+    await this.getPosts();
+  }
+
+  async componentDidUpdate(prevProps) {
+    const { isFocused } = this.props;
+
+    if (!prevProps.isFocused && isFocused && prevProps.currentScreen === 'TakePublish') {
+      await this.getPosts();
+    }
+  }
+
+  getPosts = async (cursor = null) => {
+    this.setState({ fetching: true });
+
+    // 全体の投稿を取得するgetPosts() メソッドでdata、cursorを返す
+    const response = await firebase.getPosts(cursor);
+
+    if (!response.error) {
+      const { posts } = this.state;
+
+      this.setState({
+        posts: cursor ? posts.concat(response.data) : response.data,
+        cursor: response.cursor,
+      });
+    }
+
+    this.setState({ fetching: false });
+  };
+
   onUserPress = (item) => {
-    // TODO: UserScreenに遷移する処理
+    const { navigation } = this.props;
+
+    // item.user のUserScreenに遷移
+    navigation.push('User', { uid: item.user.uid });
   };
 
   onMorePress = (item) => {
-    // TODO: 投稿を共有する処理
+    // シェアファイアログを開く
+    Share.share({
+      message: item.fileUri, // テキストとして画像のURLを渡す
+    });
   };
 
   onLikePress = async (item) => {
@@ -55,8 +82,6 @@ export default class HomeScreen extends React.Component {
   onLinkPress = (url, txt) => {
     const { navigation } = this.props;
 
-    console.log(txt);
-
     switch (txt[0]) {
       case '#':
         navigation.push('Tag', { tag: txt });
@@ -64,6 +89,21 @@ export default class HomeScreen extends React.Component {
       default:
         WebBrowser.openBrowserAsync(url);
         break;
+    }
+  };
+
+  onRefresh = async () => {
+    this.setState({ cursor: null });
+    await this.getPosts();
+  };
+
+  onEndReached = async () => {
+    const { cursor, loading } = this.state;
+
+    if (!loading && cursor) {
+      this.setState({ loading: true });
+      await this.getPosts(cursor);
+      this.setState({ loading: false });
     }
   };
 
@@ -105,6 +145,14 @@ export default class HomeScreen extends React.Component {
           ListFooterComponent={() => (
             loading ? <View style={styles.loading}><ActivityIndicator size="small" /></View> : null
           )}
+          refreshControl={(
+            <RefreshControl
+              refreshing={fetching}
+              onRefresh={this.onRefresh}
+            />
+          )}
+          onEndReachedThreshold={0.1}
+          onEndReached={this.onEndReached}
         />
       </View>
     );

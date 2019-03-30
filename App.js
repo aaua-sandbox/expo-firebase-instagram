@@ -7,6 +7,7 @@ import {
 import fonts from 'app/src/fonts';
 import images from 'app/src/images';
 import Navigation from "app/src";
+import firebase from 'app/src/firebase';
 
 export default class App extends React.Component {
   static defaultProps = {
@@ -22,6 +23,8 @@ export default class App extends React.Component {
   }
 
   loadResourcesAsync = async () => {
+    await firebase.init();
+
     // ローカルフォルダーから画像をロード
     await Asset.loadAsync(Object.keys(images).map(key => images[key]));
     // ローカルフォルダーからフォントのロード

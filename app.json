@@ -28,7 +28,15 @@
     "primaryColor": "#000",
     "extra": {
       "backgroundColor": "#fafafa",
-      "textColor": "#454545"
+      "textColor": "#454545",
+      "firebase": {
+        apiKey: "AIzaSyCljx35Znh8C6UFwYLVX6nFb8lxDRHR_9s",
+        authDomain: "expo-firebase-instagram-4f264.firebaseapp.com",
+        databaseURL: "https://expo-firebase-instagram-4f264.firebaseio.com",
+        projectId: "expo-firebase-instagram-4f264",
+        storageBucket: "expo-firebase-instagram-4f264.appspot.com",
+        messagingSenderId: "580768216352"
+      },
     },
     "description": "",
     "githubUrl": "https://github.com/aaua-sandbox/expo-firebase-instagram"

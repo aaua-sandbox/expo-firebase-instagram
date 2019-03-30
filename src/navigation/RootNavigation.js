@@ -6,6 +6,7 @@ import { reduxifyNavigator } from 'react-navigation-redux-helpers';
 
 /* from app */
 import AppNavigator from 'app/src/navigation/AppNavigator';
+import firebase from 'app/src/firebase';
 
 const App = reduxifyNavigator(AppNavigator, 'root');
 
@@ -24,6 +25,15 @@ export default class AppWithNavigationState extends React.Component {
   async componentDidMount() {
     // this.onBackPressがAndroidのバックボタンで呼び出されるようにする
     BackHandler.addEventListener('hardwareBackPress', this.onBackPress);
+
+    // 匿名ログインユーザーの情報を取得
+    const me = await firebase.getUser();
+
+    // ユーザー情報をstateにセットする
+    const { dispatch } = this.props;
+    dispatch({ type: 'ME_SET', payload: me });
+
+    this.setState({ loading: false });
   }
 
   componentWillUnmount() {
